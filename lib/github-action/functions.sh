@@ -5,37 +5,41 @@
 
 # Makes a request to the GitHub API.
 #
+# The available options are:
+#
+#     -r <resource>
+#     -e <endpoint>
+#
+# Any other arguments are passed to `curl` directly.
+#
 # For example, to get information about a GitHub Pages site:
 #
-#     callGitHubAPI repos pages
+#     callGitHubAPI -r repos -e pages -- -u exampleuser:password
 #
-# The `-X` option can be used to make other HTTP requests. To queue a
-# GitHub Pages site build, for example:
+# To queue a GitHub Pages site build, for example:
 #
-#   callGitHubAPI -X POST repos pages/builds
+#   callGitHubAPI -r repos -e pages/builds -- -u exampleuser:password -- -X POST
 #
-# Global: $gh_api_token
-# Global: $GITHUB_ACTOR
 # Global: $GITHUB_REPOSITORY
 #
 # See:
 #     https://developer.github.com/v3/repos/pages/#get-information-about-a-pages-site
 function callGitHubAPI {
-    local curl_opts=""
-    while getopts "X:" opt; do
-        curl_opts="$curl_opts -$opt $OPTARG"
+    local OPTIND opt OPTARG
+    while getopts "r:e:" opt; do
+        case "$opt" in
+            r) local -r resource="$OPTARG";;
+            e) local -r endpoint="$OPTARG";;
+        esac
     done
-    shift "$((OPTIND - 1))"
+    shift $((OPTIND - 1))
 
-    local resource="$1"
     local url="https://api.github.com/$resource"
-
-    [ ! -z "$2" ] && local endpoint="$2"
     [ ! -z "$endpoint" ] && url="$url/$GITHUB_REPOSITORY/$endpoint"
 
-    curl --silent --user "$GITHUB_ACTOR:$gh_api_token" \
+    curl --fail --silent --show-error \
         --header "Accept: application/vnd.github.v3+json" \
-        $curl_opts "$url"
+        "$@" "$url"
 }
 
 # Determines the type of the GitHub Pages site.
@@ -62,6 +66,8 @@ function getGitHubPagesSiteType {
 # repositories.
 #
 # Globals: $INPUT_GH_PAGES_PUBLISHING_SOURCE
+# Globals: $GITHUB_ACTOR
+# Globals: $gh_api_token
 #
 # Uses: callGitHubAPI
 # Uses: getGitHubPagesSiteType
@@ -73,7 +79,7 @@ function getGitHubPagesPublishingSource {
     if [ "user" = $(getGitHubPagesSiteType) ]; then
         r="master"
     elif [ -z "$INPUT_GH_PAGES_PUBLISHING_SOURCE" ]; then
-        r=$(callGitHubAPI repos pages | jq --raw-output '.source.branch')
+        r=$(callGitHubAPI -r repos -e pages -- -u "$GITHUB_ACTOR:$gh_api_token" | jq --raw-output '.source.branch')
     else
         r="$INPUT_GH_PAGES_PUBLISHING_SOURCE"
     fi

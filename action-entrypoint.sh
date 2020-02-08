@@ -19,7 +19,7 @@ readonly gh_api_token="$INPUT_SECRET_GH_PAGES_API_TOKEN"
 
 # Prepares the build directory's local Git repository.
 #
-# Global: $GITHUB_TOKEN
+# Global: $gh_api_token
 # Global: $GITHUB_REPOSITORY
 # Global: $GITHUB_ACTOR
 # Global: $gh_pages_publishing_source
@@ -29,12 +29,15 @@ readonly gh_api_token="$INPUT_SECRET_GH_PAGES_API_TOKEN"
 #
 # Uses: callGitHubAPI
 function setup_build_repo {
-    # Set up Git remote and committer identity.
-    git config remote.origin.url "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-    local github_actor_email=$(callGitHubAPI user | jq --raw-output '.email')
+    # Set up Git committer identity and remote.
+    local -r user_data_path=$(mktemp -t user_data.XXXXXX)
+    callGitHubAPI -r user -- -u "${GITHUB_ACTOR}:${gh_api_token}" > "$user_data_path"
+
+    local github_actor_email=$(jq --raw-output '.email' "$user_data_path")
     [ "null" = "$github_actor_email" ] && unset github_actor_email
-    git config user.name "$(callGitHubAPI user | jq --raw-output '.name')"
+    git config user.name "$(jq --raw-output '.name' "$user_data_path")"
     git config user.email "${github_actor_email:-$GITHUB_ACTOR@users.noreply.github.com}"
+    git config remote.origin.url "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
     # Update local repo with the necessary branch's (shallow) history.
     git fetch
@@ -54,8 +57,12 @@ function main {
     # Make sure we have permission. Needed to create `.jekyll-cache/`.
     [ "jekyll" != $(stat -c '%U' .) ] && chown jekyll .
 
-    # Check for missing GitHub Pages requirements.
-    if [ 0 -eq $(grep -q "jekyll-github-metadata" "Gemfile.lock"; echo $?) ]; then
+    # Check for GitHub Pages requirements. If the `github-pages` Gem
+    # is used, some additional environment variables need to be set.
+    [ -r "Gemfile.lock" ] && \
+        sed -ne '/^DEPENDENCIES$/,/^$/ p' "Gemfile.lock" \
+            | grep -q "github-pages"
+    if [ 0 -eq $? ]; then
         export JEKYLL_GITHUB_TOKEN="$gh_api_token"
         export PAGES_REPO_NWO="${PAGES_REPO_NWO:-$GITHUB_REPOSITORY}"
     fi
@@ -66,22 +73,19 @@ function main {
     # Execute post-build commands specified by the user.
     [ ! -z "$INPUT_POST_BUILD_COMMANDS" ] && eval "$INPUT_POST_BUILD_COMMANDS"
 
-    # Without a GitHub API token, we cannot deploy to GitHub Pages.
-    if [ -z "$gh_api_token" ]; then
-        return 0
-    fi
-
     setup_build_repo
 
     # Commit any changes back to the publishing source branch.
     cd "$(getBuildDir)"
     git add -A
     git commit -m "${INPUT_GIT_COMMIT_MESSAGE:-Auto-deployed via GitHub Actions.}" \
-        || return 0 # No need to continue if there are no new changes.
-    git push --force origin "$gh_pages_publishing_source"
+        && git push --force origin "$gh_pages_publishing_source"
     cd -
 
-    callGitHubAPI -X POST repos pages/builds
+    # Without a user-provided GitHub API token, we cannot deploy to GitHub Pages.
+    if [ -n "$gh_api_token" ]; then
+        callGitHubAPI -r repos -e pages/builds -- -X POST -u "${GITHUB_ACTOR}:${gh_api_token}"
+    fi
 }
 
 main "$@"

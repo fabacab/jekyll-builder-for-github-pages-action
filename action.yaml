@@ -78,11 +78,6 @@ runs:
         JEKYLL_GID: 0
         JEKYLL_UID: 0
 
-        # Needed for the `jekyll-github-metadata` Gem to generate the
-        # correct paths when using `absolute_url` and `relative_url`
-        # Jekyll filters in Liquid templates.
-        JEKYLL_GITHUB_TOKEN: ${{ github.token }}
-
         # When using the `github-pages` Gem, this environment variable
         # is needed for a successful build when the same information
         # is missing from the repository's `_config.yml` file.
