@@ -66,6 +66,8 @@ inputs:
 runs:
     using: docker
     image: Dockerfile
+
+    # TODO: Figure out why these may not be getting set...?
     env:
         # Jekyll Docker will use a non-root user by default for some
         # important tasks, like building the Jekyll site. This is not
@@ -75,6 +77,11 @@ runs:
         # `jekyll` as `root` for all operations.
         JEKYLL_GID: 0
         JEKYLL_UID: 0
+
+        # Needed for the `jekyll-github-metadata` Gem to generate the
+        # correct paths when using `absolute_url` and `relative_url`
+        # Jekyll filters in Liquid templates.
+        JEKYLL_GITHUB_TOKEN: ${{ github.token }}
 
         # When using the `github-pages` Gem, this environment variable
         # is needed for a successful build when the same information

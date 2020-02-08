@@ -51,8 +51,14 @@ function main {
     # Execute pre-build commands specified by the user.
     [ ! -z "$INPUT_PRE_BUILD_COMMANDS" ] && eval "$INPUT_PRE_BUILD_COMMANDS"
 
-    # Make sure we have permission.
+    # Make sure we have permission. Needed to create `.jekyll-cache/`.
     [ "jekyll" != $(stat -c '%U' .) ] && chown jekyll .
+
+    # Check for missing GitHub Pages requirements.
+    if [ 0 -eq $(grep -q "jekyll-github-metadata" "Gemfile.lock"; echo $?) ]; then
+        export JEKYLL_GITHUB_TOKEN="$gh_api_token"
+        export PAGES_REPO_NWO="${PAGES_REPO_NWO:-$GITHUB_REPOSITORY}"
+    fi
 
     # Execute the original image's own entrypoint.
     /usr/jekyll/bin/entrypoint jekyll build -d "$JEKYLL_DATA_DIR" "$INPUT_JEKYLL_BUILD_OPTS"
