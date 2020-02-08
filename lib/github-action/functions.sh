@@ -1,3 +1,8 @@
+#!/bin/bash
+#
+# Helper functions for the GitHub Action's entrypoint sript.
+############################################################
+
 # Makes a request to the GitHub API.
 #
 # For example, to get information about a GitHub Pages site:
@@ -86,8 +91,20 @@ function getGitHubPagesPublishingSource {
 #
 function parseBuildDir {
     local build_dir
-    while getopts "d:" opt; do
+    # Ignore "illegal" options. We're only looking for `-d`.
+    while getopts "d:" opt 2>/dev/null; do
         build_dir="$OPTARG"
     done
     echo "$build_dir"
+}
+
+# Get the actual build directory.
+#
+# Global: $INPUT_JEKYLL_BUILD_OPTS
+# Global: $JEKYLL_DATA_DIR
+#
+# Outputs: Filesystem path of the build directory.
+function getBuildDir {
+    local input_dir="$(parseBuildDir "$INPUT_JEKYLL_BUILD_OPTS")"
+    echo "${input_dir:-$JEKYLL_DATA_DIR}"
 }

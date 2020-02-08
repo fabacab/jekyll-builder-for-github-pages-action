@@ -17,7 +17,7 @@ source /usr/local/lib/github-action/functions.sh
 readonly gh_api_token="$INPUT_SECRET_GH_PAGES_API_TOKEN"
 [ ! -z "$gh_api_token" ] && readonly gh_pages_publishing_source=$(getGitHubPagesPublishingSource)
 
-# Handles Git operations to prepare the next GitHub Pages build.
+# Prepares the build directory's local Git repository.
 #
 # Global: $GITHUB_TOKEN
 # Global: $GITHUB_REPOSITORY
@@ -28,12 +28,11 @@ readonly gh_api_token="$INPUT_SECRET_GH_PAGES_API_TOKEN"
 # GLobal: $INPUT_GIT_COMMIT_MESSAGE
 #
 # Uses: callGitHubAPI
-#
-function commit_to_gh_pages {
+function setup_build_repo {
     # Set up Git remote and committer identity.
     git config remote.origin.url "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
     local github_actor_email=$(callGitHubAPI user | jq --raw-output '.email')
-    [ "null" = $github_actor_email ] && unset github_actor_email
+    [ "null" = "$github_actor_email" ] && unset github_actor_email
     git config user.name "$(callGitHubAPI user | jq --raw-output '.name')"
     git config user.email "${github_actor_email:-$GITHUB_ACTOR@users.noreply.github.com}"
 
@@ -41,20 +40,8 @@ function commit_to_gh_pages {
     git fetch
     git checkout -B "$gh_pages_publishing_source" origin/"$gh_pages_publishing_source"
 
-    # Get the actual build directory.
-    local -r input_dir=$(parseBuildDir "$INPUT_JEKYLL_BUILD_OPTS")
-    local -r build_dir=${input_dir:-$JEKYLL_DATA_DIR}
-
     # Move the Git repository there.
-    mv -f .git "$build_dir"
-
-    # Commit any changes back to the publishing source branch.
-    cd "$build_dir"
-    git add -A
-    git commit -m "${INPUT_GIT_COMMIT_MESSAGE:-Auto-deployed via GitHub Actions.}" \
-        || return 0 # No need to continue if there are no new changes.
-    git push --force origin "$gh_pages_publishing_source"
-    cd -
+    mv -f .git "$(getBuildDir)"
 }
 
 # Do the thing.
@@ -77,7 +64,17 @@ function main {
     if [ -z "$gh_api_token" ]; then
         return 0
     fi
-    commit_to_gh_pages
+
+    setup_build_repo
+
+    # Commit any changes back to the publishing source branch.
+    cd "$(getBuildDir)"
+    git add -A
+    git commit -m "${INPUT_GIT_COMMIT_MESSAGE:-Auto-deployed via GitHub Actions.}" \
+        || return 0 # No need to continue if there are no new changes.
+    git push --force origin "$gh_pages_publishing_source"
+    cd -
+
     callGitHubAPI -X POST repos pages/builds
 }
 
