@@ -18,7 +18,7 @@ In one of your [GitHub Actions workflow files](https://help.github.com/en/action
 
 ```yaml
 - name: Build Jekyll site.
-  uses: meitar/jekyll-builder-for-github-pages@master # Or whatever "@ref" you want.
+  uses: meitar/jekyll-builder-for-github-pages@v1 # Or whatever "@ref" you want.
 ```
 
 That's it. The action will use whatever source code is checked out from a previous [`actions/checkout`](https://github.com/actions/checkout) step as the Jekyll source to build. If the build succeeds, the step passes and the job continues with the next step.
@@ -94,7 +94,7 @@ This section offers some complete workflow examples to show you how to make use 
 
 ### Deploying to GitHub Pages
 
-By default, when the `secret_gh_pages_api_token` input variable is set, the action will deploy the Jekyll build to GitHub Pages. This input variable must be set to the value of a GitHub API Personal Access Token granted the proper scopes (permissions). [Create such a token at your GitHub account's *Settings &rarr; Developer settings &rarr; Personal access tokens* page](https://github.com/settings/tokens/new?scopes=public_repo,repo_deployment&description=Token%20for%20Deploy%20GitHub%20Pages%20GitHub%20Action).
+By default, when the `secret_gh_pages_api_token` input variable is set, the action will deploy the Jekyll build to GitHub Pages. This input variable must be set to the value of a GitHub API Personal Access Token granted the proper scopes (permissions). [Create such a token at your GitHub account's *Settings &rarr; Developer settings &rarr; Personal access tokens* page](https://github.com/settings/tokens/new?scopes=public_repo,repo_deployment&description=GitHub%20Pages%20Deployment%20Token).
 
 ```yaml
 # In your repository's `.github/workflows/publish-to-github-pages.yaml` file.
@@ -130,3 +130,9 @@ jobs:
 ```
 
 Using the above workflow file, anytime someone with the appropriate permissions pushes to the `jekyll` branch in your repository, this action will run. The `build-and-publish` job will `git checkout` the `jekyll` branch source code, which should contain your Jekyll site's source (not your generated HTML). Assuming the secret `GH_PAGES_TOKEN` contains a personal access token granted the sufficient permissions, the action will automatically detect the correct branch to `git commit` and `git push` your generated HTML to.
+
+# Support and Donations
+
+Contributions are &hearts;ily welcomed.
+
+In addition to contributing code, please consider sending some $ my way by [sponsoring me on GitHub](https://github.com/sponsors/meitar/), at least until grocery stores begin offering free food. Donations for this and my other Free Software projects make up the bulk of my income. Thank you!
