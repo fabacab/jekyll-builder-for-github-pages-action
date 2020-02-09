@@ -75,15 +75,15 @@ function getGitHubPagesSiteType {
 # See:
 #     https://help.github.com/en/github/working-with-github-pages/about-github-pages#publishing-sources-for-github-pages-sites
 function getGitHubPagesPublishingSource {
-    local r
+    local br
     if [ "user" = $(getGitHubPagesSiteType) ]; then
-        r="master"
+        br="master"
     elif [ -z "$INPUT_GH_PAGES_PUBLISHING_SOURCE" ]; then
-        r=$(callGitHubAPI -r repos -e pages -- -u "$GITHUB_ACTOR:$gh_api_token" | jq --raw-output '.source.branch')
+        br=$(callGitHubAPI -r repos -e pages -- -u "${GITHUB_ACTOR}:${gh_api_token}" | getFromJSON "source" "branch")
     else
-        r="$INPUT_GH_PAGES_PUBLISHING_SOURCE"
+        br="$INPUT_GH_PAGES_PUBLISHING_SOURCE"
     fi
-    echo "$r"
+    echo "$br"
 }
 
 # Extracts the actual build directory used.
@@ -113,4 +113,23 @@ function parseBuildDir {
 function getBuildDir {
     local input_dir="$(parseBuildDir "$INPUT_JEKYLL_BUILD_OPTS")"
     echo "${input_dir:-$JEKYLL_DATA_DIR}"
+}
+
+# Simple Ruby one-liner JSON parser and extractor.
+#
+# Arguments correspond to object keys in JSON. For instance, in the
+# invocation `getFromJSON somekey nestedkey`, when provided this JSON
+# object as standard input:
+#
+#     {"somekey": {"nestedkey": "nestedvalue"} }
+#
+# would produce the output `nestedvalue`.
+#
+# Outputs: string
+function getFromJSON {
+    local json_path="['$1']"; shift
+    for arg in "$@"; do
+        json_path="${json_path}['$arg']"
+    done
+    ruby -e "require 'json'; print JSON.parse(STDIN.read)${json_path}"
 }

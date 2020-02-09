@@ -41,6 +41,14 @@ For User or Organization repositories, this option is completely ignored because
 
 When a commit to your GitHub Pages publishing source branch ([`gh_pages_publishing_source`](#gh-pages-publishing-source)) is made, this input variable defines the message to use. If none is specified, a generic default message will be used.
 
+### `git_committer_email`
+
+The email address to use for the committer when a commit is made to your GitHub Pages publishing source branch. This defaults to the email associated with the GitHub account running the GitHub Actions workflow if the access token passed as the [`secret_gh_pages_api_token`](#secret-gh-pages-api-token) input variable has permission to access that data. If not, it will default to the value of `"{$GITHUB_ACTOR}@users.noreply.github.com"`.
+
+### `git_committer_name`
+
+The name to use for the committer when a commit is made to your GitHub Pages publishing source branch. This defaults to the display name associated with the GitHub account running the GitHub Actions workflow.
+
 ### `jekyll_build_opts`
 
 Extra arguments to pass to [the `jekyll build` command](https://jekyllrb.com/docs/usage/). This is particularly useful if your site requires non-default Jekyll build behaviors to be enabled. For example, to publish future-dated posts on your blog:

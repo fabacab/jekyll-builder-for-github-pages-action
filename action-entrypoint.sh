@@ -1,5 +1,13 @@
 #!/bin/bash -
-[ "true" = "$DEBUG" ] && set -x
+
+# Help troubleshooting efforts by...
+if [ "true" = "$DEBUG" ]; then
+    env                      # ...showing the environment
+    cat "$GITHUB_EVENT_PATH" # ...and the GitHub webhook payload
+    set -x                   # ...and script execution.
+fi
+
+# Any errors should cause an immediate exit and failure.
 set -e
 
 # Simulate GitHub Actions environment if not invoked there.
@@ -15,7 +23,7 @@ source /usr/local/lib/github-action/functions.sh
 
 # Initialize constants.
 readonly gh_api_token="$INPUT_SECRET_GH_PAGES_API_TOKEN"
-[ ! -z "$gh_api_token" ] && readonly gh_pages_publishing_source=$(getGitHubPagesPublishingSource)
+[ -n "$gh_api_token" ] && readonly gh_pages_publishing_source=$(getGitHubPagesPublishingSource)
 
 # Prepares the build directory's local Git repository.
 #
@@ -28,23 +36,30 @@ readonly gh_api_token="$INPUT_SECRET_GH_PAGES_API_TOKEN"
 # GLobal: $INPUT_GIT_COMMIT_MESSAGE
 #
 # Uses: callGitHubAPI
+# Uses: getFromJSON
 function setup_build_repo {
-    # Set up Git committer identity and remote.
-    local -r user_data_path=$(mktemp -t user_data.XXXXXX)
-    callGitHubAPI -r user -- -u "${GITHUB_ACTOR}:${gh_api_token}" > "$user_data_path"
+    # Get data from the GitHub API.
+    local -r actor_data_path=$(mktemp -t actor_data.XXXXXX)
+    callGitHubAPI -r user -- -u "${GITHUB_ACTOR}:${gh_api_token}" > "$actor_data_path"
 
-    local github_actor_email=$(jq --raw-output '.email' "$user_data_path")
-    [ "null" = "$github_actor_email" ] && unset github_actor_email
-    git config user.name "$(jq --raw-output '.name' "$user_data_path")"
-    git config user.email "${github_actor_email:-$GITHUB_ACTOR@users.noreply.github.com}"
+    # Set committer email.
+    local actor_email="$(cat "$actor_data_path" | getFromJSON email)"
+    local -r committer_email="${INPUT_GIT_COMMITTER_EMAIL:-${actor_email:-$GITHUB_ACTOR@users.noreply.github.com}}"
+    git config user.email "$committer_email"
+
+    # Set committer name.
+    local actor_name="$(cat "$actor_data_path" | getFromJSON name)"
+    git config user.name "${INPUT_GIT_COMMITTER_NAME:-${actor_name:-Github Actions ($GITHUB_WORKFLOW:$GITHUB_ACTION)}}"
+
+    # Set Git remote repository configuration.
     git config remote.origin.url "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
     # Update local repo with the necessary branch's (shallow) history.
     git fetch
     git checkout -B "$gh_pages_publishing_source" origin/"$gh_pages_publishing_source"
 
-    # Move the Git repository there.
-    mv -f .git "$(getBuildDir)"
+    # Copy the Git repository there.
+    cp -R .git "$(getBuildDir)"
 }
 
 # Do the thing.

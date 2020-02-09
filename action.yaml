@@ -49,6 +49,23 @@ inputs:
             already have GitHub Pages publishing source
             defined in your repository settings.
 
+    git_committer_name:
+        required: false
+        description: >
+            Name to use when making commits to the Git repository.
+            This will default to the name associated with the GitHub
+            account running the GitHub Actions workflow.
+
+    git_committer_email:
+        required: false
+        description:
+            Email to use when making commits to the Git repository.
+            This will default to the email associated with the GitHub
+            account running the GitHub Actions workflow if the access
+            token passed as `secret_gh_pages_api_token` has permission
+            to access that data. If not, it will default to the value
+            of `"${GITHUB_ACTOR}@users.noreply.github.com"`.
+
     git_commit_message:
         required: false
         description: >
