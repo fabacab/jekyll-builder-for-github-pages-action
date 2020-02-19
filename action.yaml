@@ -95,11 +95,6 @@ runs:
         JEKYLL_GID: 0
         JEKYLL_UID: 0
 
-        # When using the `github-pages` Gem, this environment variable
-        # is needed for a successful build when the same information
-        # is missing from the repository's `_config.yml` file.
-        PAGES_REPO_NWO: ${{ github.repository }}
-
 branding:
     icon: upload-cloud
     color: gray-dark
