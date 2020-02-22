@@ -18,7 +18,7 @@ In one of your [GitHub Actions workflow files](https://help.github.com/en/action
 
 ```yaml
 - name: Build Jekyll site.
-  uses: meitar/jekyll-builder-for-github-pages@v1 # Or whatever "@ref" you want.
+  uses: meitar/jekyll-builder-for-github-pages-action@v1 # Or whatever "@ref" you want.
 ```
 
 That's it. The action will use whatever source code is checked out from a previous [`actions/checkout`](https://github.com/actions/checkout) step as the Jekyll source to build. If the build succeeds, the step passes and the job continues with the next step.
