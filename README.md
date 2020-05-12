@@ -25,6 +25,13 @@ That's it. The action will use whatever source code is checked out from a previo
 
 For more details, see the [GitHub Actions documentation](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/using-actions-from-github-marketplace-in-your-workflow). For more common use cases, notably deploying to GitHub Pages, see [§ Examples](#examples).
 
+## Choosing a ref
+
+Use the following guidance when choosing which ref (version) you want to base your work on:
+
+* `v1` - This references the latest available 1.x.x version of the Action, which conforms with semantic versioning compatibility conventions. Use this ref in your workflow to gain backwards-compatible enhancements automatically. These versions will all be based on the upstream `jekyll/builder` Docker image's `latest` tag.
+* `builder-3.8` - This reference is based on `jekyll/builder:3.8` and is considered a stable, legacy release. Use this ref in your workflow to stick to the given upstream tag.
+
 ## Inputs
 
 You can customize this action by [using input variables](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswith).  Moreover,  *all inputs are optional*, so the action will still build your Jekyll site without any additional configuration. To enable deployments to GitHub Pages and other advanced features, some inputs are required as described below.
