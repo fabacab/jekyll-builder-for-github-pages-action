@@ -1,4 +1,4 @@
-FROM jekyll/builder
+FROM jekyll/builder:pages
 
 RUN apk add --no-cache --no-progress curl
 
