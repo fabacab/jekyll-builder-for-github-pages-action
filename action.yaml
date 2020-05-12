@@ -85,15 +85,15 @@ runs:
     image: Dockerfile
 
     # TODO: Figure out why these may not be getting set...?
-    env:
+    #env:
         # Jekyll Docker will use a non-root user by default for some
         # important tasks, like building the Jekyll site. This is not
         # compatible with GitHub Actions, which requires container
         # actions to run as the Docker default user (`root`). So, we
         # set these environment variables to tell Jekyll Docker to run
         # `jekyll` as `root` for all operations.
-        JEKYLL_GID: 0
-        JEKYLL_UID: 0
+        #JEKYLL_GID: 0
+        #JEKYLL_UID: 0
 
 branding:
     icon: upload-cloud
