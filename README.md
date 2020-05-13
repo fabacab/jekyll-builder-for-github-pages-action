@@ -40,13 +40,13 @@ For additional details, inputs are well-commented in [the action's metadata file
 
 ### `gh_pages_publishing_source`
 
-Name of the branch your repository is using as its GitHub Pages publishing source. This is the branch in your GitHub repository to which the action will commit the result of the Jekyll build.
+Name of the branch your repository is using as its GitHub Pages publishing source. This is the branch in your GitHub repository to which the Action will commit the result of the Jekyll build. Note that to deploy on GitHub Pages, you *must* first enable GitHub Pages from your repository's Settings screen and choose a GitHub Pages publishing source branch before using this Action.
 
-By default, this is detected automatically if you have already [configured a GitHub Pages publishing source](https://help.github.com/en/github/working-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#choosing-a-publishing-source) in your repository settings and provided a [`secret_gh_pages_api_token`](#secret_gh_pages_api_token) input variable with appropriate permissions.
+When GitHub Pages is enabled, User and Organization repositories reserve the `master` branch as the GitHub Pages publishing source. This means you *must not* keep your own source code files in the `master` branch of User or Organization repositories when using this Action to automate deployments to GitHub Pages.
 
-For [User or Organization repositories](https://help.github.com/en/github/working-with-github-pages/about-github-pages#types-of-github-pages-sites), this option is completely ignored because those types of GitHub Pages sites can only ever use their `master` branch as a publishing source. For other repositories, this defaults to the value set in your repository's settings.
+By default, this value is detected automatically if you have already [configured a GitHub Pages publishing source](https://help.github.com/en/github/working-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#choosing-a-publishing-source) in your repository settings and provided a [`secret_gh_pages_api_token`](#secret_gh_pages_api_token) input variable with appropriate permissions.
 
-To deploy on GitHub Pages, you *must* first enable GitHub Pages from your repository's settings screen and choose a GitHub Pages publishing source branch before using this action.
+This option is ignored when the Action detects a [User or Organization repository](https://help.github.com/en/github/working-with-github-pages/about-github-pages#types-of-github-pages-sites), because those types of GitHub Pages sites can only ever use their `master` branch as a publishing source. For Project repositories, this defaults to the value set in your repository's Settings screen (e.g., `gh-pages` branch).
 
 ### `git_commit_message`
 
