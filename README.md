@@ -18,7 +18,7 @@ In one of your [GitHub Actions workflow files](https://help.github.com/en/action
 
 ```yaml
 - name: Build Jekyll site.
-  uses: meitar/jekyll-builder-for-github-pages-action@v1 # Or whatever "@ref" you want.
+  uses: fabacab/jekyll-builder-for-github-pages-action@v1 # Or whatever "@ref" you want.
 ```
 
 That's it. The action will use whatever source code is checked out from a previous [`actions/checkout`](https://github.com/actions/checkout) step as the Jekyll source to build. If the build succeeds, the step passes and the job continues with the next step.
@@ -65,7 +65,7 @@ The name to use for the committer when a commit is made to your GitHub Pages pub
 Extra arguments to pass to [the `jekyll build` command](https://jekyllrb.com/docs/usage/). This is particularly useful if your site requires non-default Jekyll build behaviors to be enabled. For example, to publish future-dated posts on your blog:
 
 ```yaml
-- uses: meitar/jekyll-builder-for-github-pages-action@master
+- uses: fabacab/jekyll-builder-for-github-pages-action@master
   with:
     jekyll_build_opts: --future
 ```
@@ -79,7 +79,7 @@ Set this input variable to a shell command or short inline shell script, which w
 For example, the following configuration will run this action with the absolute latest version of the `bundle` command by executing `gem install bundler` before the Jekyll build is initiated.
 
 ```yaml
-- uses: meitar/jekyll-builder-for-github-pages-action@master
+- uses: fabacab/jekyll-builder-for-github-pages-action@master
   with:
     # Use a newer `bundle` command.
     pre_build_commands: gem install bundler
@@ -88,7 +88,7 @@ For example, the following configuration will run this action with the absolute 
 A more complex script can be passed as a multi-line string using a [YAML literal block scalar](https://yaml.org/spec/current.html#id2540046):
 
 ```yaml
-- uses: meitar/jekyll-builder-for-github-pages-action@master
+- uses: fabacab/jekyll-builder-for-github-pages-action@master
   with:
     pre_build_commands: |
       echo "Packaged bundler version: $(bundle --version)"
@@ -107,7 +107,7 @@ Set this input variable to the value of a [GitHub personal access token](https:/
 You should always set this input variable by using the `secrets` expression context provided by GitHub Actions runners:
 
 ```yaml
-- uses: meitar/jekyll-builder-for-github-pages-action@master
+- uses: fabacab/jekyll-builder-for-github-pages-action@master
   with:
     secret_gh_pages_api_token: ${{ secrets.YOUR_SECRET_VARIABLE }}
 ```
@@ -154,7 +154,7 @@ jobs:
       - uses: actions/checkout@v2
 
       # Invoke this action against the newly checked out source code.
-      - uses: meitar/jekyll-builder-for-github-pages-action@master
+      - uses: fabacab/jekyll-builder-for-github-pages-action@master
         with:
           # Provide this action with your repository's `GH_PAGES_TOKEN`
           # "Secret" variable. This should be the value of a personal
@@ -189,4 +189,4 @@ See [Events that trigger workflows § Scheduled events: `schedule`](https://help
 
 Contributions are &hearts;ily welcomed.
 
-In addition to contributing code, please consider sending some $ my way by [sponsoring me on GitHub](https://github.com/sponsors/meitar/), at least until grocery stores begin offering free food. Donations for this and my other Free Software projects make up the bulk of my income. Thank you!
+In addition to contributing code, please consider sending some $ my way by [sponsoring me on GitHub](https://github.com/sponsors/fabacab/), at least until grocery stores begin offering free food. Donations for this and my other Free Software projects make up the bulk of my income. Thank you!
